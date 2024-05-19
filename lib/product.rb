@@ -1,6 +1,8 @@
-require 'bigdecimal'
+require_relative 'services/money_converter'
 
 class Product
+  include MoneyConverter
+
   attr_reader :name, :code, :price_in_cents
 
   INPUT_VAL_RULES = {
@@ -19,10 +21,4 @@ class Product
     value.to_s.match(INPUT_VAL_RULES[key])
   end
 
-  private
-
-  def to_cents(main_unit)
-    main_str = main_unit.to_s
-    (BigDecimal(main_str) * 100).to_i
-  end
 end

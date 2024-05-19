@@ -1,6 +1,8 @@
 require_relative 'product'
+require_relative 'services/money_converter'
 
 class Catalogue
+  include MoneyConverter
   attr_reader :products
 
   def initialize
@@ -24,13 +26,6 @@ class Catalogue
       price = to_main_unit(product.price_in_cents)
       "#{product.name} [#{code}]: #{price}"
     }.join("\n")
-  end
-
-  private
-
-  def to_main_unit(cents)
-    cents_str = cents.to_s
-    sprintf('%.2f', (BigDecimal(cents_str) / 100))
   end
 
 end
