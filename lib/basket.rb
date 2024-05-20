@@ -9,8 +9,9 @@ class Basket
   def initialize
     @items = {} # code => {:name, :price_in_cents, :quantity}
     @subtotal = 0
+    @total = 0
   end
-  
+
   def add(code, catalogue)
     product = catalogue.find(code)
     unless product.nil?
@@ -21,6 +22,11 @@ class Basket
 
   def get_subtotal
     to_main_unit(@subtotal)
+  end
+
+  def get_total(promotions)
+    @total = @subtotal - promotions.get_savings(@items)
+    to_main_unit(@total)
   end
 
   def list

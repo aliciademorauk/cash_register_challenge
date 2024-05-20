@@ -1,6 +1,10 @@
 FactoryBot.define do
   factory :catalogue do
-    initialize_with { new }
+    transient do
+      promotion_manager { build(:promotion_manager) }
+    end
+
+    initialize_with { new(promotion_manager) }
 
     trait :with_three_products do
       after(:build) do |catalogue, evaluator|
@@ -27,4 +31,3 @@ FactoryBot.define do
     end
   end
 end
-

@@ -1,9 +1,13 @@
 require_relative '../lib/product'
 require_relative '../lib/catalogue'
+require_relative '../lib/promotion_manager'
 
 RSpec.describe Catalogue do
-  let(:catalogue_one) { build(:catalogue, :with_one_product) }
-  let(:catalogue_two) { build(:catalogue, :with_two_products) }
+  let(:promo_manager) { build(:promotion_manager) }
+  let(:promo_manager_w_promos) { build(:promotion_manager, :with_onexone_promotion) }
+  let(:catalogue_one) { build(:catalogue, :with_one_product, promotion_manager: promo_manager) }
+  let(:catalogue_two) { build(:catalogue, :with_two_products, promotion_manager: promo_manager) }
+  let(:catalogue_two_w_promos) { build(:catalogue, :with_two_products, promotion_manager: promo_manager_w_promos) }
   let(:green_tea) { build(:product, :green_tea) }
   let(:coffee) { build(:product, :coffee) }
   let(:strawberries) { build(:product, :strawberries) }
@@ -48,7 +52,15 @@ RSpec.describe Catalogue do
   end
 
   describe '#delete' do
-    it 'deletes existing product' do
+    it 'deletes product' do
+      catalogue_two.delete(green_tea.code)
+      expect(catalogue_two.products).not_to have_key('GR1')
+    end
+    it 'deletes product code from active promotions' do
+      catalogue_two_w_promos.delete(green_tea.code)
+      expect(promo_manager_w_promos.find(green_tea.code)).to be_falsey
+    end
+    it 'deletes product when active promotions are empty' do
       catalogue_two.delete(green_tea.code)
       expect(catalogue_two.products).not_to have_key('GR1')
     end
@@ -57,11 +69,11 @@ RSpec.describe Catalogue do
       catalogue_two.delete(strawberries.code)
       expect(catalogue_two.products).to be_empty
     end
-    it 'returns nil if product is not found' do
-      expect(catalogue_two.delete(coffee.code)).to be_nil
+    it 'returns false if product is not found' do
+      expect(catalogue_two.delete(coffee.code)).to be_falsey
     end
-    it 'returns nil if code is nil' do
-      expect(catalogue_two.delete(nil)).to be_nil
+    it 'returns false if code is nil' do
+      expect(catalogue_two.delete(nil)).to be_falsey
     end
   end
 

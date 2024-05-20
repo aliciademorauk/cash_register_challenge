@@ -3,11 +3,12 @@ require_relative 'services/money_converter'
 
 class Catalogue
   include MoneyConverter
-  
+
   attr_reader :products
 
-  def initialize
+  def initialize(promotion_manager)
     @products = {}
+    @promotion_manager = promotion_manager
   end
 
   def find(code)
@@ -20,6 +21,7 @@ class Catalogue
 
   def delete(code)
     @products.delete(code)
+    @promotion_manager.delete(code) if @promotion_manager
   end
 
   def list
