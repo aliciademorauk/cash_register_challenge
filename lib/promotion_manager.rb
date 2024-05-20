@@ -1,18 +1,20 @@
 require 'set'
 
 class PromotionManager
-
-    # Stores input validation when the user adds a new promotion (if input validation is needed).
-    INPUT_VAL_RULES = {
-      min_q: /^[2-9]$/, # Integer between 2 and 9 (inclusive)
-      disc: /^(?:[5-9]|[1-8][0-9]|90)$/ # Integer between 5 and 90 (inclusive)
-    }
   
-    # Stores the promotion rules - Buy One Get One; Bulk Buy Discount.
-    PROMO_PROCS = {
-      onexone: proc { |p, q| q >= 2 ? q / 2 * p : 0 },
-      bulk: proc { |p, q, min_q, disc| q >= min_q ? (p * q * disc) / 100 : 0 }
-    }
+  attr_reader :active
+
+  # Stores input validation when the user adds a new promotion (if input validation is needed).
+  INPUT_VAL_RULES = {
+    min_q: /^[2-9]$/, # Integer between 2 and 9 (inclusive)
+    disc: /^(?:[5-9]|[1-8][0-9]|90)$/ # Integer between 5 and 90 (inclusive)
+  }
+
+  # Stores the promotion rules - Buy One Get One; Bulk Buy Discount.
+  PROMO_PROCS = {
+    onexone: proc { |p, q| q >= 2 ? q / 2 * p : 0 },
+    bulk: proc { |p, q, min_q, disc| q >= min_q ? (p * q * disc) / 100 : 0 }
+  }
   
   def initialize
     @active = { 
@@ -34,6 +36,28 @@ class PromotionManager
   def add_bulk(code, conditions) 
     @active[:bulk][conditions] ||= []
     @active[:bulk][conditions] << code unless @active[:bulk][conditions].include?(code)
+  end
+
+  def delete(code)
+    @active[:onexone].delete?(code) || 
+    @active[:bulk].any? do |conditions, codes|
+      if codes.delete(code)
+        @active[:bulk].delete(conditions) if codes.empty?
+        true
+      end
+    end
+  end
+
+  def list
+    output = []
+    onexone_promos = @active[:onexone]
+    output << "Buy One Get One Free: #{onexone_promos.to_a.join(', ')}" unless onexone_promos.empty?
+    @active[:bulk].each do |conditions, codes|
+      unless codes.empty?
+        output << "Buy #{conditions[:min_qty]} Get #{conditions[:disc]}% Off: #{codes.join(', ')}"
+      end
+    end
+    output.empty? ? 'No active promotions available.' : output.join("\n")
   end
   
 end
