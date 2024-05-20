@@ -26,4 +26,11 @@ class Basket
     to_main_unit(@subtotal)
   end
 
+  def list
+    @items.map do |code, details|
+      price = to_main_unit(details[:price_in_cents])
+      "#{details[:name]} [#{code}] #{details[:quantity]} x #{price}"
+    end.join("\n")
+  end 
+
 end
