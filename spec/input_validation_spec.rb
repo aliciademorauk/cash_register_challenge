@@ -1,12 +1,13 @@
 require_relative '../lib/services/input_validation'
 require_relative '../lib/product'
+require_relative '../lib/promotion_manager'
 
 RSpec.describe InputValidation do 
   include InputValidation
 
   describe '.validated?' do
-    context 'when called to validate Product attributes' do
-      context 'when called with valid key-value pairs' do
+    context 'when called with valid key-value pairs' do
+      context 'when called to validate Product attributes' do
         context 'when called with valid name value' do
           it 'validates single character' do
             expect(validated?(:name, '7', Product::INPUT_VAL_RULES)).to be_truthy
@@ -110,29 +111,72 @@ RSpec.describe InputValidation do
         end
       end
 
-      context 'when called with invalid key-value pairs' do
-        context 'when value is nil' do
-          it 'returns nil' do
-            expect(validated?(:name, nil, Product::INPUT_VAL_RULES)).to be_nil
+      context 'when called to validate Promotion conditions inputs' do
+        context 'when validating :min_q' do
+          it 'validates integer between 2 and 9' do
+            (2..9).each do |valid_value|
+              expect(validated?(:min_q, valid_value, PromotionManager::INPUT_VAL_RULES)).to be_truthy
+            end
+          end
+    
+          it 'invalidates integers outside the range 2 to 9' do
+            [0, 1, 10, 11].each do |invalid_value|
+              expect(validated?(:min_q, invalid_value, PromotionManager::INPUT_VAL_RULES)).to be_falsey
+            end
+          end
+    
+          it 'invalidates non-integer values' do
+            ['a', '1.5', '10.5', ''].each do |invalid_value|
+              expect(validated?(:min_q, invalid_value, PromotionManager::INPUT_VAL_RULES)).to be_falsey
+            end
           end
         end
     
-        context 'when key is nil' do
-          it 'fails' do
-            expect { validated?(nil, 'STRAWBERRIES', Product::INPUT_VAL_RULES) }.to raise_error(TypeError)
+        context 'when validating :disc' do
+          it 'validates integer between 5 and 90 inclusive' do
+            valid_values = (5..9).to_a + (10..89).to_a + [90]
+            valid_values.each do |valid_value|
+              expect(validated?(:disc, valid_value, PromotionManager::INPUT_VAL_RULES)).to be_truthy
+            end
+          end
+    
+          it 'invalidates integers outside the range 5 to 90' do
+            [0, 1, 4, 91, 100].each do |invalid_value|
+              expect(validated?(:disc, invalid_value, PromotionManager::INPUT_VAL_RULES)).to be_falsey
+            end
+          end
+    
+          it 'invalidates non-integer values' do
+            ['a', '5.5', '100.1', ''].each do |invalid_value|
+              expect(validated?(:disc, invalid_value, PromotionManager::INPUT_VAL_RULES)).to be_falsey
+            end
           end
         end
-    
-        context 'when key is not valid' do
-          it 'fails' do
-            expect { validated?(:unknown_key, 'STRAWBERRIES', Product::INPUT_VAL_RULES) }.to raise_error(TypeError)
-          end
+      end
+    end
+
+    context 'when called with invalid key-value pairs' do
+      context 'when value is nil' do
+        it 'returns nil' do
+          expect(validated?(:name, nil, Product::INPUT_VAL_RULES)).to be_nil
         end
-    
-        context 'when key is not a symbol' do
-          it 'fails' do
-            expect { validated?('name', 'STRAWBERRIES', Product::INPUT_VAL_RULES) }.to raise_error(TypeError)
-          end
+      end
+  
+      context 'when key is nil' do
+        it 'fails' do
+          expect { validated?(nil, 5, PromotionManager::INPUT_VAL_RULES) }.to raise_error(TypeError)
+        end
+      end
+  
+      context 'when key is not valid' do
+        it 'fails' do
+          expect { validated?(:unknown_key, 'STRAWBERRIES', Product::INPUT_VAL_RULES) }.to raise_error(TypeError)
+        end
+      end
+  
+      context 'when key is not a symbol' do
+        it 'fails' do
+          expect { validated?('min_q', 5, PromotionManager::INPUT_VAL_RULES) }.to raise_error(TypeError)
         end
       end
     end
