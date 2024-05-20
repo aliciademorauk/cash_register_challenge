@@ -111,7 +111,11 @@
           * gem 'tty-prompt'
           * gem 'tty-box'
           * gem 'artii'
+    
 
 ### Running the App
     
-  * Run `ruby bin/run.rb`.
+  * Run app with `ruby bin/run.rb`.
+  * Run tests with RSpec:
+    * `bundle exec rspec` for all tests.
+    * `bundle exec rspec` path/to/test_file_spec.rb.
