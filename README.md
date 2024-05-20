@@ -63,28 +63,30 @@
     * **Buy One Get One**:
         * Configured through the CLI, this promotion does not take any conditions or inputs, other than the product code.
         * For every pair of items with the same code in the basket, 1 x price is discounted from the basket.
-        * For an odd quantity, the total discount will always be less than half (e.g. 9 of the same item in your basket generate a discount of 4 x price). The following promotions fall under this category:
+        * It is stored in a set, ensuring ease of code lookups and preventing duplicate values.
+        * For an odd quantity, the total discount will always be less than half (e.g. 9 of the same item in your basket generate a discount of 4 x price).
+        * The following promotions fall under this category:
             * Green Tea: buy 1, get 2 for the same price.
 
 ## User Story
 
-* Cash register can register a new product, register a new promotion or checkout a customer's items (i.e. compute price of a basket).
+* Operator loads up the app and test data is loaded in automatically (Products and Promotions for GR1, SR1, CF1).
+* Operator can register a new product, register a new promotion or checkout a customer's items (i.e. compute price of a basket).
   * Register a new product:
-      * Cash register adds a new product to the shop.
+      * Cash register adds a new product to the catalogue.
   * Register a new promotion:
-       * Cash register leverages promotion logic involving a specific item.
+       * Cash register leverages promotion logic involving a specific item code and correctly adds it to the active promotions store.
   * Charge a customer:
-        * Cash register takes 'scanned' products in order.
-        * For every addition to cart, cash register outputs current cart cost, including any promotions applied.
-        * This repeats until there are no more products to scan (i.e. user presses = key) and final cart cost is outputted, including savings.
+        * Cash register takes 'scanned' products in order (one by one) outputting current cart cost for every addition to cart, including any promotions applied.
+        * This repeats until there are no more products to scan (i.e. operator presses `=` key) and final cart cost, accounting for promotion savings, is outputted.
 
 ## Domain Design
 
 * `Product` has a name, a product code, and a price stored in cents. Products are uniquely identified through their code, which must follow a specific format alongside the other attributes of the class instances.
 * `Catalogue` manages the products that have been registered (i.e. products eligible to be added to basked and purchased), ensuring deleting a specific product delets its unique code from the active promotions store.
-* `Basket` manages a basket session; it keeps track of the items in the basket, the subtotal, the total (subtotal - basket savings).
-* `PromotionManager` manages pricing rules and their application to basket, as well as the codes they are matched to.
-* `CLI` is in charge of I/O, and with that, input validation. It is in charge of translating the users' choices into scripts. It instantiates the necessary classes and loads the initial data; it displays menus; it uses services (modules) to perform input validation.
+* `Basket` is used for a basket session (basket is instantiated by the CLI class for every basket total computation); it keeps track of the items in the basket, the subtotal, the total (subtotal - basket savings).
+* `PromotionManager` manages pricing rules (and product codes in active promotions) and provides functionality for their application to a basket of items.
+* `CLI` is in charge of I/O, and with that, input validation. It is in charge of translating the users' choices into scripts. It loads the initial data, instantiates the necessary classes and displays menus; it uses services (InputValidation) to perform input validation prior to Product instantiation and Promotion store.
 
 ## Getting Started
 
