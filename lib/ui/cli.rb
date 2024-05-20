@@ -68,65 +68,23 @@ class CLI
     option = show_add_del
     case option
     when :add
-      code = get_validated_product_attr('code')
-      return warn_and_menu('Product already exists in the catalogue.') if @catalogue.find(code)
-      name = get_validated_product_attr('name')
-      price = get_validated_product_attr('price')
-      if @prompt.yes?("Confirm?: #{name} [#{code}]: #{price}")
-        @catalogue.add(name, code, price)
-        @prompt.ok('Product successfully added!')
-      else
-        @prompt.warn('Aborted...')
-      end
+      add_product
     when :del
-      code = get_string_attr('Enter CODE:')
-      if @catalogue.find(code)
-        @catalogue.delete(code)
-        @prompt.ok('Product successfully removed!')
-      else
-        return warn_and_menu('Product doesn\'t exist')
-      end
+      delete_product
     end
     to_products
   end
 
   def self.manage_promotions
     option = show_add_del
-    product = @catalogue.find(get_string_attr('Enter product CODE:'))
-    return warn_and_menu('The product does not exist.') if product.nil?
+    product = find_product
+    return unless product
+  
     case option
     when :add
-      return warn_and_menu('The product already has a promotion') if (@promotion_manager.find(product.code))
-      type = @prompt.select('Select type:') do |menu|
-        menu.choice name: 'One For One', value: :onexone
-        menu.choice name: 'Bulk Buy', value: :bulk
-      end
-      case type
-      when :onexone
-        mssg = "Confirm?: Buy #{product.name} [#{product.code}] Get One Free"
-        if @prompt.yes?(mssg)
-          @promotion_manager.add_onexone(product.code)
-          @prompt.ok('Promotion successfully added!')
-        else
-          @prompt.warn('No action was taken.')
-        end
-      when :bulk
-        disc = get_validated_promo_attr('disc', 'discount')
-        min_qty = get_validated_promo_attr('min_q', 'min. quantity')
-        mssg = "Confirm?: #{product.name} [#{product.code}]: Buy #{min_qty} Get #{disc}% Off."
-        if @prompt.yes?(mssg)
-          @promotion_manager.add_bulk(product.code, { min_qty: min_qty, disc: disc })
-          @prompt.ok('Promotion successfully added.')
-        else 
-          @prompt.say('No action was taken.')
-        end
-      end
+      add_promotion(product)
     when :del
-      if @promotion_manager.delete(product.code)
-        @prompt.ok('Promotion successfully removed!')
-      else
-        @prompt.warn('This promotion is not active. No action was taken.')
-      end
+      delete_promotion(product)
     end
     to_promotions
   end
@@ -205,7 +163,102 @@ class CLI
     @prompt.ask(message) { |q| q.required true; q.modify :strip; q.convert :integer}
   end
 
-  # .checkout helper methods
+  # .manage_products
+
+  def self.add_product
+    code = get_validated_product_attr('code')
+    return warn_and_menu('Product already exists in the catalogue.') if @catalogue.find(code)
+  
+    name = get_validated_product_attr('name')
+    price = get_validated_product_attr('price')
+    confirm_message = "Confirm?: #{name} [#{code}]: #{price}"
+    
+    if @prompt.yes?(confirm_message)
+      @catalogue.add(name, code, price)
+      @prompt.ok('Product successfully added!')
+    else
+      @prompt.warn('Aborted...')
+    end
+  end
+  
+  def self.delete_product
+    code = get_string_attr('Enter CODE:')
+    if @catalogue.find(code)
+      @catalogue.delete(code)
+      @prompt.ok('Product successfully removed!')
+    else
+      warn_and_menu('Product doesn\'t exist')
+    end
+  end
+  
+  def self.warn_and_menu(message)
+    @prompt.warn(message)
+    to_products
+  end
+
+  # .manage_promos private methods
+
+  def self.find_product
+    product = @catalogue.find(get_string_attr('Enter product CODE:'))
+    return warn_and_menu('The product does not exist.') if product.nil?
+    product
+  end
+  
+  def self.add_promotion(product)
+    return warn_and_menu('The product already has a promotion') if @promotion_manager.find(product.code)
+  
+    type = select_promotion_type
+    case type
+    when :onexone
+      add_onexone_promotion(product)
+    when :bulk
+      add_bulk_promotion(product)
+    end
+  end
+  
+  def self.select_promotion_type
+    @prompt.select('Select type:') do |menu|
+      menu.choice name: 'One For One', value: :onexone
+      menu.choice name: 'Bulk Buy', value: :bulk
+    end
+  end
+  
+  def self.add_onexone_promotion(product)
+    message = "Confirm?: Buy #{product.name} [#{product.code}] Get One Free"
+    if @prompt.yes?(message)
+      @promotion_manager.add_onexone(product.code)
+      @prompt.ok('Promotion successfully added!')
+    else
+      @prompt.warn('No action was taken.')
+    end
+  end
+  
+  def self.add_bulk_promotion(product)
+    disc = get_validated_promo_attr('disc', 'discount')
+    min_qty = get_validated_promo_attr('min_q', 'min. quantity')
+    message = "Confirm?: #{product.name} [#{product.code}]: Buy #{min_qty} Get #{disc}% Off."
+    if @prompt.yes?(message)
+      @promotion_manager.add_bulk(product.code, { min_qty: min_qty, disc: disc })
+      @prompt.ok('Promotion successfully added.')
+    else
+      @prompt.say('No action was taken.')
+    end
+  end
+  
+  def self.delete_promotion(product)
+    if @promotion_manager.delete(product.code)
+      @prompt.ok('Promotion successfully removed!')
+    else
+      @prompt.warn('This promotion is not active. No action was taken.')
+    end
+  end
+  
+  def self.warn_and_menu(message)
+    @prompt.warn(message)
+    to_promotions
+  end
+
+  # .checkout private methods
 
   def self.scan_products(basket)
     @prompt.say('Enter product codes, press [=] when basket is full:')
