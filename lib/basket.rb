@@ -10,14 +10,11 @@ class Basket
     @items = {} # code => {:name, :price_in_cents, :quantity}
     @subtotal = 0
   end
-
+  
   def add(code, catalogue)
     product = catalogue.find(code)
     unless product.nil?
-      code = product.code
-      item = @items[code]
-      item ? item[:quantity] += 1 : @items[code] = { name: product.name, price_in_cents: product.price_in_cents, quantity: 1 }
-      @subtotal += product.price_in_cents
+      update_basket(code, product)
     end
     product
   end
@@ -32,5 +29,19 @@ class Basket
       "#{details[:name]} [#{code}] #{details[:quantity]} x #{price}"
     end.join("\n")
   end 
+
+  private
+
+  def update_basket(code, product)
+    item = @items[code]
+    if item 
+      item[:quantity] += 1
+    else
+      @items[code] = { 
+        name: product.name, price_in_cents: product.price_in_cents, quantity: 1 
+      }
+    end
+    @subtotal += product.price_in_cents
+  end
 
 end
