@@ -19,23 +19,18 @@ RSpec.describe MoneyConverter do
     it 'converts main unit to cents correctly' do
       expect(to_cents(0.50)).to eq(50)
     end
-
     it 'handles whole numbers correctly' do
       expect(to_cents('2')).to eq(200)
     end
-
     it 'handles large numbers correctly' do
       expect(to_cents(1234.56)).to eq(123456)
     end
-
     it 'handles zero main unit correctly' do
       expect(to_cents('0.00')).to eq(0)
     end
-
     it 'handles negative main unit correctly' do
       expect(to_cents('-0.50')).to eq(-50)
     end
-
     it 'handles input with extra decimal places correctly' do
       expect(to_cents('0.501')).to eq(50) # Round down
       expect(to_cents('0.509')).to eq(50) # Round down
