@@ -1,10 +1,16 @@
 require_relative 'product'
+require_relative 'services/money_converter'
+require_relative 'data_store/catalogue_store'
 
 class Catalogue
+  include MoneyConverter
+  include CatalogueStore
+
   attr_reader :products
 
-  def initialize
-    @products = {}
+  def initialize(promotion_manager)
+    @products = (init_catalogue_store; load_seed_catalogue)
+    @promotion_manager = promotion_manager
   end
 
   def find(code)
@@ -16,6 +22,7 @@ class Catalogue
   end
 
   def delete(code)
+    @promotion_manager.delete(code) if @promotion_manager
     @products.delete(code)
   end
 
@@ -24,13 +31,6 @@ class Catalogue
       price = to_main_unit(product.price_in_cents)
       "#{product.name} [#{code}]: #{price}"
     }.join("\n")
-  end
-
-  private
-
-  def to_main_unit(cents)
-    cents_str = cents.to_s
-    sprintf('%.2f', (BigDecimal(cents_str) / 100))
   end
 
 end
