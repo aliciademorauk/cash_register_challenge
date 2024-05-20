@@ -10,7 +10,7 @@ RSpec.describe Basket do
   let(:basket_gt) { build(:basket, :with_green_tea) }
   let(:basket_gt_cf) { build(:basket, :with_two_gt_and_two_cf) }
   let(:complete_catalogue) { build(:catalogue, :with_three_products) } 
-  let(:empty_catalogue) { build(:catalogue, :empty) }
+  let(:empty_catalogue) { build(:catalogue, :empty) } 
   let(:random_product) { complete_catalogue.products.values.sample }
   let(:coffee) { build(:product, :coffee) }
   let(:strawberries) { build(:product, :strawberries) }

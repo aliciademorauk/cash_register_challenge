@@ -58,7 +58,7 @@ RSpec.describe Catalogue do
     end
     it 'deletes product code from active promotions' do
       catalogue_two_w_promos.delete(green_tea.code)
-      expect(promo_manager_w_promos.find(green_tea.code)).to be_falsey
+      expect(promo_manager_w_promos.active[:onexone].to_a).not_to include(green_tea.code)
     end
     it 'deletes product when active promotions are empty' do
       catalogue_two.delete(green_tea.code)

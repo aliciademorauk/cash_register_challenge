@@ -1,13 +1,15 @@
 require_relative 'product'
 require_relative 'services/money_converter'
+require_relative 'data_store/catalogue_store'
 
 class Catalogue
   include MoneyConverter
+  include CatalogueStore
 
   attr_reader :products
 
   def initialize(promotion_manager)
-    @products = {}
+    @products = (init_catalogue_store; load_seed_catalogue)
     @promotion_manager = promotion_manager
   end
 
@@ -20,8 +22,8 @@ class Catalogue
   end
 
   def delete(code)
-    @products.delete(code)
     @promotion_manager.delete(code) if @promotion_manager
+    @products.delete(code)
   end
 
   def list

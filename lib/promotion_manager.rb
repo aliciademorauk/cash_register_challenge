@@ -1,6 +1,9 @@
 require 'set'
+require_relative 'data_store/promotion_manager_store'
 
 class PromotionManager
+  include PromotionManagerStore
+
   attr_reader :active
 
   # Stores input validation when the user adds a new promotion (if input validation is needed).
@@ -17,7 +20,7 @@ class PromotionManager
   
   # onexone: ['GR1'] & bulk: { { min_qty: 3, disc: 33 } => ['CF1'], { min_qty: 5, disc: 10 } => ['SR1'] } 
   def initialize
-    @active = { onexone: Set.new, bulk: {} }
+    @active = (init_promotions_store; load_seed_promotions)
   end
 
   def find(code)
