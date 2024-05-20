@@ -2,7 +2,7 @@
 
 <br />
 
-  <h1 align="center">Cash Register CLI Application</h1>
+  <h1 align="center"> :money_with_wings: Cash Register CLI App :money_with_wings: </h1>
   
   <p align="center">
     <p> · Cash register app simulation built in Ruby · </p>
