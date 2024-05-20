@@ -17,8 +17,4 @@ class Product
     @price_in_cents = to_cents(price)
   end
 
-  def self.attr_validated?(key, value)
-    value.to_s.match(INPUT_VAL_RULES[key])
-  end
-
 end

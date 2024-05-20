@@ -16,7 +16,6 @@ FactoryBot.define do
     end
 
     trait :empty do
-      # This will create an empty PromotionManager
     end
   end
 end
