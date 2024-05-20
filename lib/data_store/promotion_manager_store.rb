@@ -1,5 +1,7 @@
 require 'pstore'
 
+# Used to load and initialize test 'special conditions' on app start up and to persist the data when CLI.shutdown is executed
+
 module PromotionManagerStore
 
   def load_seed_promotions

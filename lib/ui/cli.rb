@@ -137,7 +137,10 @@ class CLI
     return main_menu
   end
 
-  # Promo/product input validation helper methods
+  # Promo/product input validation helper methods 
+  # Note that we choose not to rely on tty:prompt's validation features because classes that can be instantiated with user 
+  # input should have their validation rules defined within them (see Product and Promotion Manager)
+
 
   def self.get_validated_product_attr(attr_name)
     attr = get_string_attr("Enter #{attr_name.upcase}:")

@@ -58,6 +58,9 @@ class PromotionManager
     output.empty? ? 'No active promotions available.' : output.join("\n")
   end
 
+  # This method accepts a hash of items (Basket.items) and matches the item code (i.e. the keys) with the promotion (if any)
+  # to determine the discount based on quantity of items in basket
+
   def get_savings(items)
     discount = 0
     items.each do |code, item|

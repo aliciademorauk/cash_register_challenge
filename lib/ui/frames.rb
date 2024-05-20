@@ -1,6 +1,8 @@
 require 'tty-box'
 require 'artii'
 
+# Contains the app banner, product catalogue and receipt visuals
+
 module Frames
 
   def self.banner

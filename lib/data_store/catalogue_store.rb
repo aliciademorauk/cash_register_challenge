@@ -1,7 +1,9 @@
 require 'pstore'
 
+# Used to load and initialize test products into catalogue on app start up and to save products to tempfile when CLI.shutdown is executed
+
 module CatalogueStore
-  
+
   def load_seed_catalogue
     store = PStore.new('catalogue_data.pstore')
     products = {}
