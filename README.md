@@ -5,7 +5,7 @@
   <h1 align="center">Cash Register CLI Application</h1>
   
   <p align="center">
-    <p> · Cash register tool simulation built in vanilla Ruby · </p>
+    <p> · Cash register app simulation built in Ruby · </p>
   </p>
   
 </div>
@@ -39,54 +39,52 @@
 
 ## Requirements Interpretation
 
-* **General Interpretation**: I have attempted to simulate a cash register tool in a physical store, given the mention of products being scanned. It has three primary functionalities: 
+* **General Interpretation**: This program simulates a cash register tool in a physical store, given the mention of products being scanned, amongst other things. It has three primary features for the user: 
     * managing promotions, 
     * managing products,
     * checking out (filling up a basket and calculating total). 
 
 * **Scope**: The cash register is not responsible for handling payments; it's duty ends when it correctly computes a basket price with promotions. The cash register is not aware of the stock levels in the shop, only of the product details (name, code, price) of the items available.
 
-* **User**: The user of the tool is the shop owner or worker. They have the option to 'scan' products (by entering valid product codes) and 'checkout', as well as configure prices and promotions by selecting the appropriate menu options.
+* **User**: The user of the tool is the shop owner or worker. They have the option to 'scan' products (enter valid product codes on the command line) and 'checkout', as well as configure prices and promotions by selecting the appropriate menu options.
 
 ## Promotions Logic
 
-* To offer the shop owner flexibility with a straightforward approach, promotions are applied to unique product codes, and they have been divided in two key types: Buy One Get One and Bulk Buy.
+* To offer the shop owner flexibility with a straightforward approach, promotions are applied to unique product codes, and every product code can only have one promotion. Promotions have been divided into two key types: Buy One Get One and Bulk Buy.
   
     * **Bulk Buy**:
-        * Configured through the CLI, the operator can set a minimum quantity to be added to basket and a discount to be applied for a specific code.
-        * All products with the same code that are in the basket at the time of checkout after the promotion is added will be discounted by the specified discount if the minimum quantity is met.
-        * This promotion type is stored as follows: in a hash where the key is the conditions `{:min_q, :disc}` and the value is a list of product codes that should be discounted with those conditions.
-        * This ensures that codes with the same Bulk Buy promotion conditions are appended to a list, avoiding repetition. The following promotions fall under this category:
+        * Configured through the CLI, the operator can set a minimum quantity and a given discount to be applied to all units of an item in a basket.
+        * All products with the same code that are in the basket after the promotion is correctly added will be discounted by the specified percentage if the minimum quantity is met.
+        * The data for this promotion type is stored with the key being the conditions `{:min_q, :disc}` and the value a list of product codes that should be discounted with those conditions. This ensures that codes with the same Bulk Buy promotion conditions are appended to a list rather than generating another key-value pair in the hash. From the "special conditions" given in the challenge instructions, the following fall under this category:
             * Coffee: buy 3+ coffees, price drops to 2/3.
-                * <em> Note that, for simplicity, this specific discount has been specified as a 33% discount. However, it can be flexibly added and removed through the CLI.</em>
+                * <em> This specific discount has been denoted as 33% discount.</em>
             * Strawberries: buy 3+, price drops from 5 to 4.50 per item.
           
     * **Buy One Get One**:
         * Configured through the CLI, this promotion does not take any conditions or inputs, other than the product code.
-        * For every pair of the same code in the basket, 1 x price is discounted from the basket.
-        * This implies that for odd numbers, the total discount for each code will always be less than half.  The following promotions fall under this category:
+        * For every pair of items with the same code in the basket, 1 x price is discounted from the basket.
+        * For an odd quantity, the total discount will always be less than half (e.g. 9 of the same item in your basket generate a discount of 4 x price). The following promotions fall under this category:
             * Green Tea: buy 1, get 2 for the same price.
 
 ## User Story
 
-* Cash register can register a new product, register a new promotion or charge a customer (i.e. compute price of a cart).
-  * Register a new product
+* Cash register can register a new product, register a new promotion or checkout a customer's items (i.e. compute price of a basket).
+  * Register a new product:
       * Cash register adds a new product to the shop.
-  * Register a new promotion
+  * Register a new promotion:
        * Cash register leverages promotion logic involving a specific item.
-  * Charge a customer
-        * Cash register takes 'scanned' product.
-        * Cash register then adds product(s) to cart.
-        * Cash register outputs current cart cost, including any promotions applied.
-        * This repeats until there are no more products to scan (i.e. user presses = key) and current (now final) cart cost is outputted.
+  * Charge a customer:
+        * Cash register takes 'scanned' products in order.
+        * For every addition to cart, cash register outputs current cart cost, including any promotions applied.
+        * This repeats until there are no more products to scan (i.e. user presses = key) and final cart cost is outputted, including savings.
 
 ## Domain Design
 
-* `Product` has a name, a product code, and a price stored in cents. Products are uniquely identified through their code.
-* `Catalogue` manages the products that have been registered (i.e. products eligible to be added to basked and purchased).
+* `Product` has a name, a product code, and a price stored in cents. Products are uniquely identified through their code, which must follow a specific format alongside the other attributes of the class instances.
+* `Catalogue` manages the products that have been registered (i.e. products eligible to be added to basked and purchased), ensuring deleting a specific product delets its unique code from the active promotions store.
 * `Basket` manages a basket session; it keeps track of the items in the basket, the subtotal, the total (subtotal - basket savings).
-* `PromotionManager` holds information about pricing rules and their application, as well as the codes they are matched to.
-* `CLI` is in charge of I/O, and with that, input validation. It is in charge of translating the users choices and inputs into actions. It instantiates the necessary classes and loads the initial data; it displays menus; it uses services (Modules) to perform input validation.
+* `PromotionManager` manages pricing rules and their application to basket, as well as the codes they are matched to.
+* `CLI` is in charge of I/O, and with that, input validation. It is in charge of translating the users' choices into scripts. It instantiates the necessary classes and loads the initial data; it displays menus; it uses services (modules) to perform input validation.
 
 ## Getting Started
 
@@ -115,7 +113,7 @@
 
 ### Running the App
     
-  * Run app with `ruby bin/run.rb`.
+  * Run app through run.rb entry point with `ruby bin/run.rb`.
   * Run tests with RSpec:
     * `bundle exec rspec` for all tests.
-    * `bundle exec rspec` path/to/test_file_spec.rb.
+    * `bundle exec rspec path/to/test_file_spec.rb` for specific test file.
