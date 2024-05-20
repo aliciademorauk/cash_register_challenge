@@ -3,6 +3,7 @@ require_relative 'services/money_converter'
 
 class Catalogue
   include MoneyConverter
+  
   attr_reader :products
 
   def initialize

@@ -68,7 +68,7 @@ RSpec.describe Catalogue do
   describe '#list' do
     context 'when the catalogue is empty' do
       it 'returns informative string' do
-        empty_catalogue = build(:catalogue, :empty_catalogue)
+        empty_catalogue = build(:catalogue, :empty)
         expect(empty_catalogue.list).to eq('No products available.')
       end
     end

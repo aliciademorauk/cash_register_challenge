@@ -23,7 +23,7 @@ FactoryBot.define do
       end
     end
 
-    trait :empty_catalogue do
+    trait :empty do
     end
   end
 end
