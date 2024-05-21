@@ -26,42 +26,78 @@ class CLI
   end
 
   def self.main_menu
-    show_menu('MAIN MENU', {
-      'Go To Checkout' => -> { set_ui; checkout },
-      'Manage Products/Promotions' => -> { set_ui; config },
-      'Exit' => -> { shutdown }
-    })
+    loop do
+      choice = get_menu_choice('MAIN MENU', [
+        ['Go To Checkout', 1],
+        ['Configure Products & Promotions', 2 ],
+        ['Exit', 3 ]
+      ]) 
+      case (choice)
+      when 1
+        set_ui
+        checkout
+      when 2
+        set_ui
+        config
+      when 3
+        shutdown
+      end
+    end
   end
+
 
   def self.config
-    show_menu('', {
-      'Manage Products' => -> { to_products },
-      'Manage Promotions' => -> { to_promotions },
-      'Main Menu' => -> { main_menu },
-      'Exit' => -> { shutdown }
-    })
+    choice = get_menu_choice('', [
+        ['Manage Products', 4],
+        ['Manage Promotions', 5],
+        ['Main Menu', 6],
+        ['Exit', 7]
+      ]) 
+    case (choice)
+    when 4
+      set_ui
+      to_products
+    when 5
+      set_ui
+      to_promotions
+    when 7
+      set_ui
+      shutdown
+    end
   end
-
+    
   def self.to_products
-    show_menu('', {
-      'Add/Delete Products' => -> { manage_products; main_menu },
-      'Main Menu' => -> { main_menu }
-    })
+    choice = get_menu_choice('', [
+      ['Add/Delete Products', 8],
+      ['Main Menu', 9],
+    ]) 
+    case (choice)
+    when 8
+      set_ui
+      manage_products
+    end
   end
 
   def self.to_promotions
-    show_menu('', {
-      'See Active Promotions'=> -> { print_promotions; main_menu },
-      'Add/Delete Promotions' => -> { manage_promotions; main_menu },
-      'Main Menu' => -> { main_menu }
-    })
+    choice = get_menu_choice('', [
+      ['See Active Promotions', 10],
+      ['Add/Delete Promotions', 11],
+      ['Main Menu', 12]
+    ]) 
+    case (choice)
+    when 10
+      set_ui
+      print_promotions
+    when 11
+      set_ui
+      manage_promotions
+    end
   end
 
   def self.checkout
     basket = Basket.new
     subtotal = scan_products(basket)
     process_checkout(basket, subtotal)
-    return main_menu
   end
 
   def self.manage_products
@@ -72,7 +108,6 @@ class CLI
     when :del
       delete_product
     end
-    return to_products
   end
 
   def self.manage_promotions
@@ -87,7 +122,6 @@ class CLI
         delete_promotion(product)
       end
     end
-    return to_promotions
   end
 
   private
@@ -119,17 +153,22 @@ class CLI
     PROMOS
   end
 
-  def self.show_menu(title, choices)
-    @prompt.select(title, quiet: true) do |menu|
-      choices.each { |choice_name, action| menu.choice(choice_name, action) }
+  # choices = {small: 1, medium: 2, large: 3}
+  # prompt.select("What size?", choices)
+
+  def self.get_menu_choice(title, options)
+    choices = []
+    options.map do |option|
+      choices << {name: option[0], value: option[1]}
     end
+    @prompt.select(title, choices)
   end
 
   def self.show_add_del()
     @prompt.select('') do |menu|
       menu.choice name: 'Add', value: :add
       menu.choice name: 'Delete', value: :del
-      menu.choice name: 'Main Menu', value: -> { main_menu }
+      menu.choice name: 'Main Menu', value: :main
     end
   end
 
@@ -162,17 +201,11 @@ class CLI
     @prompt.ask(message) { |q| q.required true; q.modify :strip; q.convert :integer}
   end
 
-  ### Find product with valid code ###
-
-  def self.find_product
-    @catalogue.find(get_string_attr('Enter product CODE:'))
-  end
-
   ### MANAGE PRODUCTS ###
 
   def self.add_product
     code = get_validated_product_attr('code')
-    product = find_product
+    product = @catalogue.find(code)
   
     if product.nil?
       name = get_validated_product_attr('name')
@@ -181,12 +214,12 @@ class CLI
       
       if @prompt.yes?(confirm_message)
         @catalogue.add(name, code, price)
-        @prompt.ok('Product successfully added!')
+        @prompt.ok("\nProduct successfully added!\n")
       else
         @prompt.warn('Aborted...')
       end
     else 
-      @prompt.warn('Product already exists.')
+      @prompt.warn("\nProduct already exists.\n")
     end
   end
   
@@ -194,18 +227,18 @@ class CLI
     code = get_string_attr('Enter CODE:')
     if @catalogue.find(code)
       @catalogue.delete(code)
-      @prompt.ok('Product successfully removed!')
+      @prompt.ok("\nProduct successfully removed!\n")
     else
-      @prompt.warn('Product does not exist.')
+      @prompt.warn("\nProduct does not exist.\n")
     end
   end
 
   ### MANAGE PROMOTIONS ###
 
   def self.find_product_for_promos
-    product = find_product
+    product = @catalogue.find(get_string_attr('Enter CODE:'))
     if product.nil?
-      @prompt.warn('Product does not exist.')
+      @prompt.warn("\nProduct does not exist.\n")
     end
     product
   end
