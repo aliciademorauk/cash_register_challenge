@@ -63,8 +63,8 @@
     * **Buy One Get One**:
         * Configured through the CLI, this promotion does not take any conditions or inputs, other than the product code.
         * For every pair of items with the same code in the basket, 1 x price is discounted from the basket.
+        * For an odd quantity, the total discount will always be less than half (e.g. 9 of the same item in the basket generate a discount of 4 x price).
         * It is stored in a set, ensuring ease of code lookups and preventing duplicate values.
-        * For an odd quantity, the total discount will always be less than half (e.g. 9 of the same item in your basket generate a discount of 4 x price).
         * The following promotions fall under this category:
             * Green Tea: buy 1, get 2 for the same price.
 
