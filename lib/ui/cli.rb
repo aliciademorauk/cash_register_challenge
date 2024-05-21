@@ -61,7 +61,7 @@ class CLI
     basket = Basket.new
     subtotal = scan_products(basket)
     process_checkout(basket, subtotal)
-    main_menu
+    return main_menu
   end
 
   def self.manage_products
@@ -72,23 +72,24 @@ class CLI
     when :del
       delete_product
     end
-    to_products
+    return to_products
   end
 
   def self.manage_promotions
     option = show_add_del
-    product = find_product
-    return unless product
+    product = find_product_for_promos
   
-    case option
-    when :add
-      add_promotion(product)
-    when :del
-      delete_promotion(product)
+    unless product.nil?
+      case option
+      when :add
+        add_promotion(product)
+      when :del
+        delete_promotion(product)
+      end
     end
-    to_promotions
+    return to_promotions
   end
-  
+
   private
 
   # Save data and exit
@@ -99,7 +100,7 @@ class CLI
     exit 0
   end
 
-  # Display/UI helper methods
+  # Display/UI private methods
 
   def self.set_ui
     system 'clear'
@@ -132,15 +133,10 @@ class CLI
     end
   end
 
-  def self.warn_and_menu(warning)
-    @prompt.warn("#{warning} No action was taken.")
-    return main_menu
-  end
+  ### Promo/product input validation private methods  ###
 
-  # Promo/product input validation helper methods 
   # Note that we choose not to rely on tty:prompt's validation features because classes that can be instantiated with user 
   # input should have their validation rules defined within them (see Product and Promotion Manager)
-
 
   def self.get_validated_product_attr(attr_name)
     attr = get_string_attr("Enter #{attr_name.upcase}:")
@@ -166,21 +162,31 @@ class CLI
     @prompt.ask(message) { |q| q.required true; q.modify :strip; q.convert :integer}
   end
 
-  # .manage_products
+  ### Find product with valid code ###
+
+  def self.find_product
+    @catalogue.find(get_string_attr('Enter product CODE:'))
+  end
+
+  ### MANAGE PRODUCTS ###
 
   def self.add_product
     code = get_validated_product_attr('code')
-    return warn_and_menu('Product already exists in the catalogue.') if @catalogue.find(code)
+    product = find_product
   
-    name = get_validated_product_attr('name')
-    price = get_validated_product_attr('price')
-    confirm_message = "Confirm?: #{name} [#{code}]: #{price}"
-    
-    if @prompt.yes?(confirm_message)
-      @catalogue.add(name, code, price)
-      @prompt.ok('Product successfully added!')
-    else
-      @prompt.warn('Aborted...')
+    if product.nil?
+      name = get_validated_product_attr('name')
+      price = get_validated_product_attr('price')
+      confirm_message = "Confirm?: #{name} [#{code}]: #{price}"
+      
+      if @prompt.yes?(confirm_message)
+        @catalogue.add(name, code, price)
+        @prompt.ok('Product successfully added!')
+      else
+        @prompt.warn('Aborted...')
+      end
+    else 
+      @prompt.warn('Product already exists.')
     end
   end
   
@@ -190,27 +196,28 @@ class CLI
       @catalogue.delete(code)
       @prompt.ok('Product successfully removed!')
     else
-      warn_and_menu('Product doesn\'t exist')
+      @prompt.warn('Product does not exist.')
     end
   end
-  
-  def self.warn_and_menu(message)
-    @prompt.warn(message)
-    to_products
+
+  ### MANAGE PROMOTIONS ###
+
+  def self.find_product_for_promos
+    product = find_product
+    if product.nil?
+      @prompt.warn('Product does not exist.')
+    end
+    product
   end
 
-  # .manage_promos private methods
-
-  def self.find_product
-    product = @catalogue.find(get_string_attr('Enter product CODE:'))
-    return warn_and_menu('The product does not exist.') if product.nil?
-    product
+  def self.find_promotion(product)
+    @promotion_manager.find(product.code) ? @prompt.warn('The product already has a promotion.') : nil
   end
   
   def self.add_promotion(product)
-    return warn_and_menu('The product already has a promotion') if @promotion_manager.find(product.code)
+    return unless find_promotion(product).nil?
   
-    type = select_promotion_type
+    type = select_promotion
     case type
     when :onexone
       add_onexone_promotion(product)
@@ -219,7 +226,7 @@ class CLI
     end
   end
   
-  def self.select_promotion_type
+  def self.select_promotion
     @prompt.select('Select type:') do |menu|
       menu.choice name: 'One For One', value: :onexone
       menu.choice name: 'Bulk Buy', value: :bulk
@@ -255,13 +262,8 @@ class CLI
       @prompt.warn('This promotion is not active. No action was taken.')
     end
   end
-  
-  def self.warn_and_menu(message)
-    @prompt.warn(message)
-    to_promotions
-  end
 
-  # .checkout private methods
+  ### CHECKOUT ###
 
   def self.scan_products(basket)
     @prompt.say('Enter product codes, press [=] when basket is full:')
