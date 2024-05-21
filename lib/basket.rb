@@ -7,7 +7,7 @@ class Basket
   attr_reader :items
 
   def initialize
-    @items = {} # code => {:name, :price_in_cents, :quantity}
+    @items = {} # { code => {:name, :price_in_cents, :quantity} }
     @subtotal = 0
     @total = 0
   end
