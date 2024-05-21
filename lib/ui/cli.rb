@@ -153,15 +153,12 @@ class CLI
     PROMOS
   end
 
-  # choices = {small: 1, medium: 2, large: 3}
-  # prompt.select("What size?", choices)
-
   def self.get_menu_choice(title, options)
     choices = []
     options.map do |option|
       choices << {name: option[0], value: option[1]}
     end
-    @prompt.select(title, choices)
+    @prompt.select(title, choices, quiet: true)
   end
 
   def self.show_add_del()
@@ -270,7 +267,7 @@ class CLI
     message = "Confirm?: Buy #{product.name} [#{product.code}] Get One Free"
     if @prompt.yes?(message)
       @promotion_manager.add_onexone(product.code)
-      @prompt.ok('Promotion successfully added!')
+      @prompt.ok("\nPromotion successfully added!\n")
     else
       @prompt.warn('No action was taken.')
     end
@@ -282,17 +279,17 @@ class CLI
     message = "Confirm?: #{product.name} [#{product.code}]: Buy #{min_qty} Get #{disc}% Off."
     if @prompt.yes?(message)
       @promotion_manager.add_bulk(product.code, { min_qty: min_qty, disc: disc })
-      @prompt.ok('Promotion successfully added.')
+      @prompt.ok("\nPromotion successfully added.\n")
     else
-      @prompt.say('No action was taken.')
+      @prompt.say("\nNo action was taken.\n")
     end
   end
   
   def self.delete_promotion(product)
     if @promotion_manager.delete(product.code)
-      @prompt.ok('Promotion successfully removed!')
+      @prompt.ok("\nPromotion successfully removed!\n")
     else
-      @prompt.warn('This promotion is not active. No action was taken.')
+      @prompt.warn("\nThis promotion is not active. No action was taken.\n")
     end
   end
 
@@ -303,7 +300,7 @@ class CLI
     code = get_string_attr('SCAN >')
     until code == '='
       if basket.add(code, @catalogue).nil?
-        @prompt.warn('No product found in catalogue. Try again:')
+        @prompt.warn("\nNo product found in catalogue. Try again:\n")
       else
         subtotal = basket.get_subtotal
         @prompt.ok("Current total: #{subtotal}")
